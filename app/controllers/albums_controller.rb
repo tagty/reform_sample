@@ -14,22 +14,22 @@ class AlbumsController < ApplicationController
 
   # GET /albums/new
   def new
-    @album = Album.new
-    @album.build_artist
-    @album.songs.build
+    @album = AlbumForm.new(build_album)
   end
 
   # GET /albums/1/edit
   def edit
+    @album = AlbumForm.new(@album)
   end
 
   # POST /albums
   # POST /albums.json
   def create
-    @album = Album.new(album_params)
+    @album = AlbumForm.new(build_album)
 
     respond_to do |format|
-      if @album.save
+      if @album.validate(params[:album])
+        @album.save
         format.html { redirect_to @album, notice: 'Album was successfully created.' }
         format.json { render :show, status: :created, location: @album }
       else
@@ -42,8 +42,10 @@ class AlbumsController < ApplicationController
   # PATCH/PUT /albums/1
   # PATCH/PUT /albums/1.json
   def update
+    @album = AlbumForm.new(@album)
     respond_to do |format|
-      if @album.update(album_params)
+      if @album.validate(params[:album])
+        @album.save
         format.html { redirect_to @album, notice: 'Album was successfully updated.' }
         format.json { render :show, status: :ok, location: @album }
       else
@@ -69,10 +71,10 @@ class AlbumsController < ApplicationController
       @album = Album.find(params[:id])
     end
 
-    # Never trust parameters from the scary internet, only allow the white list through.
-    def album_params
-      params.require(:album).permit(:title,
-                                    artist_attributes: [:name],
-                                    songs_attributes: [:title])
+    def build_album
+      album = Album.new
+      album.build_artist
+      album.songs.build
+      album
     end
 end
